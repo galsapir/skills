@@ -1,10 +1,10 @@
 {
-  "name": "claude-interview",
-  "version": "0.1.0",
-  "description": "Deep project interview command that produces actionable specs before implementation begins",
+  "name": "gal-skills",
+  "version": "0.2.0",
+  "description": "Personal Claude Code skills collection: project interviews, adversarial reviews, and more",
   "author": {
     "name": "Gal Sapir"
   },
   "license": "MIT",
-  "keywords": ["interview", "spec", "requirements", "planning", "project-scoping"]
+  "keywords": ["interview", "spec", "review", "adversarial", "second-opinion", "planning"]
 }

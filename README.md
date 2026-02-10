@@ -1,49 +1,56 @@
-# claude-interview
+# claude-skills
 
-A Claude Code plugin that provides the `/interview` command — a deep project interview that produces actionable specs before implementation begins.
+Personal Claude Code skills collection by [Gal Sapir](https://github.com/galsapir).
 
-## What it does
+## Skills
 
-When you run `/interview` (optionally with a brief project description), Claude conducts a thorough requirements interview using structured questions. It adapts depth to project complexity, provides checkpoints where you can steer the conversation, and outputs a structured spec file or GitHub issue.
+### `/interview` — Project Interview
+
+Deep project interview that produces actionable specs before implementation begins. Conducts a structured requirements interview with adaptive depth and checkpoints, then outputs a spec as a file, GitHub issue, or both.
+
+```
+/interview                                    # starts with "what are we building?"
+/interview a CLI tool for managing dotfiles
+/interview path/to/plan.md                   # reads a plan file as starting point
+```
+
+### `/adversarial-review` — Independent Second Opinion
+
+Gets an independent second opinion on code, specs, diffs, or GitHub issues from a separate AI model. Supports multiple reviewer backends for genuinely orthogonal perspectives.
+
+```
+/adversarial-review src/main.py                          # auto-detect backend
+/adversarial-review src/main.py --backend codex          # use Codex (GPT family)
+/adversarial-review src/main.py --backend claude          # use claude -p
+/adversarial-review src/main.py --backend bedrock         # use AWS Bedrock
+/adversarial-review diff                                  # review uncommitted changes
+/adversarial-review #42                                   # review GitHub issue
+/adversarial-review PR #7                                 # review pull request
+/adversarial-review src/main.py --quick                   # skip Understanding section
+/adversarial-review src/main.py --model gpt-5.3-codex    # explicit model
+```
+
+**Backends**:
+
+| Backend | Models | Notes |
+|---------|--------|-------|
+| `codex` | `o4-mini` (default), `gpt-5.3-codex`, `gpt-5.2-codex` | Most orthogonal — different model family |
+| `claude` | `sonnet` (default), any Claude Code model | Same family, fresh context |
+| `bedrock` | Claude Sonnet 4.5 (default), Haiku 4.5 | Same family via AWS; extensible to Llama/Nova/Mistral |
+
+**Output structure**: Executive Summary (SHIP/ITERATE/RETHINK verdict), Understanding (full mode), Findings (severity + confidence rated), Strengths, Questions for Author.
 
 ## Install
 
 ```
-/plugin marketplace add galsapir/claude-interview
-/plugin install claude-interview
+/install-plugin galsapir/claude-skills
 ```
 
-## Usage
+## Prerequisites
 
-```
-/interview                              # starts with "what are we building?"
-/interview a CLI tool for managing dotfiles
-/interview path/to/plan.md             # reads a plan file as starting point
-```
-
-## How it works
-
-1. **Context gathering** — reads your project directory, git history, and CLAUDE.md for existing context
-2. **Adaptive scoping** — estimates project size and tells you upfront how many questions to expect
-3. **Structured interview** — asks 1-2 questions at a time, prefers multiple-choice, covers vision, UX, architecture, operations, and constraints
-4. **Checkpoints every 3-5 questions** — you can continue at current depth, go higher level, skip to a topic, or wrap up
-5. **Spec generation** — synthesizes answers into a structured spec with goals, non-goals, user stories, technical design, and edge cases
-6. **Flexible output** — write to file, create a GitHub issue, both, or just display in chat
-
-## Example
-
-Here's a real session where `/interview` was used to spec out [Marginalia](https://github.com/galsapir/marginalia), a markdown annotation tool:
-
-**Input:** "I want to create a single page application that would allow me to present a markdown file and annotate it with notes"
-
-**Interview flow:**
-- ~15 questions across 3 checkpoints
-- Covered: annotation UX (text selection vs line-based), input method (paste vs file upload), persistence model, tech stack, UI layout, export format, edge cases
-- User steered via checkpoints: "continue at this depth" for core features, wrapped up after edge cases
-
-**Output:** A [172-line spec](https://github.com/galsapir/marginalia/blob/main/spec-markdown-notes.md) covering overview, goals/non-goals, user stories, technical design (component tree, data model, selection mapping algorithm), export format, edge cases, and open questions.
-
-The spec was then used directly to build the full application in the same session.
+- **Codex backend**: `npm install -g @openai/codex` + `codex auth`
+- **Bedrock backend**: AWS credentials configured with Bedrock access in `eu-west-1`
+- **Claude backend**: Claude Code CLI (you already have this)
 
 ## License
 
