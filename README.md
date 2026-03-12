@@ -14,7 +14,7 @@ Add the marketplace and install the plugins you want:
 
 ## Plugins
 
-### `interview` — Project Interview
+### `/interview` — Project Interview
 
 Deep project interview that produces actionable specs before implementation begins. Conducts a structured requirements interview with adaptive depth and checkpoints, then outputs a spec as a file, GitHub issue, or both.
 
@@ -24,7 +24,7 @@ Deep project interview that produces actionable specs before implementation begi
 /interview path/to/plan.md                   # reads a plan file as starting point
 ```
 
-### `adversarial-review` — Independent Second Opinion
+### `/adversarial-review` — Independent Second Opinion
 
 Gets an independent second opinion on code, specs, diffs, or GitHub issues from a separate AI model. Supports multiple reviewer backends for genuinely orthogonal perspectives.
 
@@ -46,7 +46,7 @@ Gets an independent second opinion on code, specs, diffs, or GitHub issues from 
 |---------|---------------|-------|
 | `codex` | `gpt-5.4` | Most orthogonal — different model family |
 | `claude` | `sonnet` | Same family, fresh context |
-| `bedrock` | Claude Sonnet 4.6 | Same family via AWS; extensible to Llama/Nova/Mistral |
+| `bedrock` | `claude-sonnet-4-6` | Same family via AWS; extensible to Llama/Nova/Mistral |
 
 **Output structure**: Executive Summary (SHIP/ITERATE/RETHINK verdict), Understanding (full mode), Findings (severity + confidence rated), Strengths, Questions for Author.
 

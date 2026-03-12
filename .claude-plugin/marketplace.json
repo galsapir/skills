@@ -11,25 +11,11 @@
     {
       "name": "interview",
       "source": "./plugins/interview",
-      "description": "Deep project interview that produces actionable specs before implementation begins",
-      "version": "1.0.0",
-      "author": {
-        "name": "Gal Sapir"
-      },
-      "license": "MIT",
-      "keywords": ["interview", "spec", "planning", "requirements"],
       "category": "productivity"
     },
     {
       "name": "adversarial-review",
       "source": "./plugins/adversarial-review",
-      "description": "Independent second opinion from a separate AI model on code, specs, diffs, PRs, or GitHub issues",
-      "version": "1.0.0",
-      "author": {
-        "name": "Gal Sapir"
-      },
-      "license": "MIT",
-      "keywords": ["review", "adversarial", "second-opinion", "code-review"],
       "category": "code-quality"
     }
   ]
