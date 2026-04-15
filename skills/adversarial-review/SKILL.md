@@ -6,7 +6,14 @@ description: >
   "adversarial review", "independent review", or "codex review". Supports
   codex (GPT family), claude -p, and AWS Bedrock backends.
   Arguments: [target] [--backend codex|claude|bedrock] [--model name] [--quick]
+license: MIT
+compatibility: >
+  Requires at least one reviewer backend: codex CLI (npm install -g @openai/codex),
+  claude CLI, or AWS credentials with Bedrock access. Requires git.
 allowed-tools: Bash(codex:*) Bash(claude:*) Bash(gh:*) Bash(git:*) Bash(uv:*) Read Grep Glob
+metadata:
+  author: galsapir
+  version: "1.0.0"
 ---
 
 Independent second opinion from a separate AI model.

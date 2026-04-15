@@ -1,7 +1,16 @@
 ---
-description: Deep project interview before starting implementation
-argument-hint: [brief project description or plan file path]
-model: opus
+name: interview
+description: >
+  Deep project interview that produces actionable specs before implementation begins.
+  Conducts a structured requirements interview with adaptive depth and checkpoints,
+  then outputs a spec as a file, GitHub issue, or both. Use when the user wants to
+  scope a project, plan a feature, write a spec, or says "interview".
+license: MIT
+compatibility: Designed for Claude Code (or similar products)
+metadata:
+  author: galsapir
+  version: "1.0.0"
+  model-hint: opus
 ---
 
 Conduct a thorough project interview to produce a clear, actionable spec before any implementation begins.
