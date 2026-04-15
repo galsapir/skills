@@ -1,4 +1,4 @@
-# claude-skills
+# skills
 
 A collection of [Agent Skills](https://agentskills.io) by [Gal Sapir](https://github.com/galsapir).
 
@@ -7,14 +7,14 @@ Compatible with Claude Code, Cursor, GitHub Copilot, VS Code, Gemini CLI, and [m
 ## Install
 
 ```
-npx skills add galsapir/claude-skills
+npx skills add galsapir/skills
 ```
 
 This installs all skills from the repository. To install a specific skill:
 
 ```
-npx skills add galsapir/claude-skills --skill interview
-npx skills add galsapir/claude-skills --skill adversarial-review
+npx skills add galsapir/skills --skill interview
+npx skills add galsapir/skills --skill adversarial-review
 ```
 
 ## Skills
@@ -85,7 +85,7 @@ If you previously installed using the old Claude Code plugin marketplace format:
 Then reinstall using the skills CLI:
 
 ```
-npx skills add galsapir/claude-skills
+npx skills add galsapir/skills
 ```
 
 ## Prerequisites
