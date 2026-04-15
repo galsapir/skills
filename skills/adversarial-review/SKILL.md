@@ -5,7 +5,7 @@ description: >
   diffs, PRs, or GitHub issues. Use when the user asks for "second opinion",
   "adversarial review", "independent review", or "codex review". Supports
   codex (GPT family), claude -p, and AWS Bedrock backends.
-  Arguments: [target] [--backend codex|claude|bedrock] [--model name] [--quick]
+  Arguments: [target] [--backend codex|claude|bedrock] [--model name] [--effort low|medium|high] [--quick]
 license: MIT
 compatibility: >
   Requires at least one reviewer backend: codex CLI (npm install -g @openai/codex),
@@ -30,7 +30,7 @@ Parse `$ARGUMENTS`:
 - PR URL or `PR #N` → `gh pr view` + `gh pr diff` review
 - No args → ask user via AskUserQuestion
 
-Extract flags: `--backend`, `--model`, `--quick`.
+Extract flags: `--backend`, `--model`, `--effort` (codex only, default `medium`), `--quick`.
 
 ### 2. Reconnaissance
 
@@ -64,7 +64,7 @@ Write assembled prompt to `/tmp/ar-prompt-$$.md`.
 
 Capture git state before (`git diff --stat`), then run:
 
-- **codex**: `codex exec "$(cat /tmp/ar-prompt-$$.md)" --sandbox read-only --model <model>` (use stdin for prompts >100KB)
+- **codex**: `codex exec "$(cat /tmp/ar-prompt-$$.md)" --sandbox read-only --model <model> -c model_reasoning_effort=<effort>` (use stdin for prompts >100KB; effort defaults to `medium`)
 - **claude**: `claude -p "$(cat /tmp/ar-prompt-$$.md)" --model <model> --output-format text`
 - **bedrock**: `uv run scripts/bedrock-review.py /tmp/ar-prompt-$$.md --model <model> --region eu-west-1`
 
