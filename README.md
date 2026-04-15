@@ -2,7 +2,7 @@
 
 A collection of [Agent Skills](https://agentskills.io) by [Gal Sapir](https://github.com/galsapir).
 
-Compatible with Claude Code, Cursor, GitHub Copilot, VS Code, Gemini CLI, and [30+ other agents](https://agentskills.io) that support the open Agent Skills standard.
+Compatible with Claude Code, Cursor, GitHub Copilot, VS Code, Gemini CLI, and [many other agents](https://agentskills.io) that support the open Agent Skills standard.
 
 ## Install
 
@@ -13,20 +13,22 @@ npx skills add galsapir/claude-skills
 This installs all skills from the repository. To install a specific skill:
 
 ```
-npx skills add galsapir/claude-skills/interview
-npx skills add galsapir/claude-skills/adversarial-review
+npx skills add galsapir/claude-skills --skill interview
+npx skills add galsapir/claude-skills --skill adversarial-review
 ```
 
 ## Skills
+
+Skills are invoked by describing the task in natural language — the agent selects a matching skill based on its description. No slash command needed.
 
 ### `interview` — Project Interview
 
 Deep project interview that produces actionable specs before implementation begins. Conducts a structured requirements interview with adaptive depth and checkpoints, then outputs a spec as a file, GitHub issue, or both.
 
 ```
-/interview                                    # starts with "what are we building?"
-/interview a CLI tool for managing dotfiles
-/interview path/to/plan.md                   # reads a plan file as starting point
+"use the interview skill to scope a CLI tool for managing dotfiles"
+"interview me about adding dark mode to settings"
+"use the interview skill with this plan: path/to/plan.md"
 ```
 
 ### `adversarial-review` — Independent Second Opinion
@@ -34,16 +36,15 @@ Deep project interview that produces actionable specs before implementation begi
 Gets an independent second opinion on code, specs, diffs, or GitHub issues from a separate AI model. Supports multiple reviewer backends for genuinely orthogonal perspectives.
 
 ```
-/adversarial-review src/main.py                          # auto-detect backend
-/adversarial-review src/main.py --backend codex          # use Codex (GPT family)
-/adversarial-review src/main.py --backend claude          # use claude -p
-/adversarial-review src/main.py --backend bedrock         # use AWS Bedrock
-/adversarial-review diff                                  # review uncommitted changes
-/adversarial-review #42                                   # review GitHub issue
-/adversarial-review PR #7                                 # review pull request
-/adversarial-review src/main.py --quick                   # skip Understanding section
-/adversarial-review src/main.py --model gpt-5.4          # explicit model
+"run adversarial-review on src/main.py"
+"adversarial-review src/main.py with the codex backend"
+"adversarial-review my uncommitted changes"
+"adversarial-review issue #42"
+"adversarial-review PR #7"
+"adversarial-review src/main.py (quick mode)"
 ```
+
+The skill accepts these arguments: `[target] [--backend codex|claude|bedrock] [--model name] [--quick]`.
 
 **Backends**:
 
