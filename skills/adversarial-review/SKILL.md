@@ -12,7 +12,7 @@ compatibility: >
   `subagent` needs nothing beyond Claude Code itself. `interactive` needs tmux
   and codex CLI. `codex` / `claude` / `bedrock` need their respective CLIs or
   AWS credentials. Requires git.
-allowed-tools: Bash(codex:*) Bash(claude:*) Bash(gh:*) Bash(git:*) Bash(uv:*) Bash(tmux:*) Read Grep Glob Task
+allowed-tools: Bash(codex:*) Bash(claude:*) Bash(gh:*) Bash(git:*) Bash(uv:*) Bash(tmux:*) Read Grep Glob Agent
 metadata:
   author: galsapir
   version: "1.2.0"
@@ -70,7 +70,7 @@ Capture git state before (`git diff --stat`), then run the chosen backend.
 
 #### subagent (default)
 
-Invoke the `Task` tool directly:
+Invoke the `Agent` tool directly:
 
 - `subagent_type`: `general-purpose`
 - `description`: `Adversarial review (<content_type>)`
@@ -82,18 +82,17 @@ Use the subagent's returned text as the raw reviewer output for step 6. The suba
 
 Pre-reqs: must be running inside tmux (`tmux list-sessions` succeeds) and `codex` must be on PATH. If either fails, print a clear error and fall back to asking the user to pick another backend.
 
-1. Launch a new window pre-seeded with codex:
+1. Launch a new window with codex reading the prompt via stdin:
    ```
-   tmux new-window -n adv-review "codex \"$(cat /tmp/ar-prompt-$$.md)\""
+   tmux new-window -n adv-review "codex < /tmp/ar-prompt-$$.md"
    ```
-   (For prompts >100KB, write prompt to file and launch with `codex < /tmp/ar-prompt-$$.md`.)
 2. Tell the user: *"Opened tmux window `adv-review`. Drive the review to convergence, then in that window type: `output the final review JSON only`. When done, come back here and say `done` (or `cancel`)."*
 3. Wait for the user to signal completion.
 4. On `done`: capture the full pane buffer:
    ```
    tmux capture-pane -t adv-review -p -S - > /tmp/ar-capture-$$.txt
    ```
-   Extract the last complete JSON object from the capture (scan for the final balanced `{...}` block). If extraction fails, ask the user to paste the JSON directly.
+   Extract the last valid JSON object: pipe through `jq -R -s 'split("\n") | map(try fromjson // empty) | last'`. If that yields nothing, try extracting the last `{...}` block and validating with `jq .`. If extraction still fails, ask the user to paste the JSON directly.
 5. Kill the window: `tmux kill-window -t adv-review`.
 6. Feed the extracted JSON to step 6 as the raw reviewer output.
 
