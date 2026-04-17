@@ -13,7 +13,7 @@ compatibility: >
 allowed-tools: Bash(codex:*) Bash(claude:*) Bash(gh:*) Bash(git:*) Bash(uv:*) Read Grep Glob
 metadata:
   author: galsapir
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 Independent second opinion from a separate AI model.
@@ -70,13 +70,44 @@ Capture git state before (`git diff --stat`), then run:
 
 After execution, run `git diff --stat && git status --short`. If any new changes appear, flag immediately.
 
-### 6. Present Results
+### 6. Parse and Present Results
 
-Output verbatim as:
+The reviewer returns a single JSON object (see prompt template). Strip any surrounding markdown code fences, then parse.
+
+**On parse success**, render as markdown:
 
 ```
 ## Independent Review (via [backend] / [model])
-[full response]
+
+**Verdict**: [SHIP | ITERATE | RETHINK]
+
+[summary]
+
+### Understanding
+[understanding — omit this section entirely in quick mode or if null]
+
+### Findings
+[Each finding as its own block with every certificate field — severity, confidence, what, premises (each with evidence), trace, conclusion, alternative_hypothesis, suggestion, location. Do not drop premises, trace, or alternative_hypothesis for brevity.]
+
+### Strengths
+[omit section entirely if empty]
+
+### Questions for the Author
+[omit section entirely if empty]
 ```
 
-Do NOT editorialize or soften. If you disagree with a finding, add a labeled note after the full review. Clean up temp file.
+Preserve every certificate field verbatim. Do NOT editorialize or soften. If you disagree with a finding, add a labeled `## Note from Claude` section *after* the review — never mutate the reviewer's output.
+
+**On parse failure**, print the raw reviewer output under a warning:
+
+```
+## Independent Review (via [backend] / [model]) — raw output
+
+> ⚠️ Reviewer did not return valid JSON. Output preserved verbatim below.
+
+[raw text]
+```
+
+Do not attempt to synthesize findings from malformed output.
+
+Clean up temp file.
