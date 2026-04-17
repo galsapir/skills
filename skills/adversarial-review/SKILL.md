@@ -4,16 +4,18 @@ description: >
   Get an independent second opinion from a separate AI model on code, specs,
   diffs, PRs, or GitHub issues. Use when the user asks for "second opinion",
   "adversarial review", "independent review", or "codex review". Supports
-  codex (GPT family), claude -p, and AWS Bedrock backends.
-  Arguments: [target] [--backend codex|claude|bedrock] [--model name] [--effort low|medium|high] [--quick]
+  subagent (fresh-context sub-Claude, default), interactive (tmux + codex),
+  codex exec, claude -p, and AWS Bedrock backends.
+  Arguments: [target] [--backend subagent|interactive|codex|claude|bedrock] [--model name] [--effort low|medium|high] [--quick]
 license: MIT
 compatibility: >
-  Requires at least one reviewer backend: codex CLI (npm install -g @openai/codex),
-  claude CLI, or AWS credentials with Bedrock access. Requires git.
-allowed-tools: Bash(codex:*) Bash(claude:*) Bash(gh:*) Bash(git:*) Bash(uv:*) Read Grep Glob
+  `subagent` needs nothing beyond Claude Code itself. `interactive` needs tmux
+  and codex CLI. `codex` / `claude` / `bedrock` need their respective CLIs or
+  AWS credentials. Requires git.
+allowed-tools: Bash(codex:*) Bash(claude:*) Bash(gh:*) Bash(git:*) Bash(uv:*) Bash(tmux:*) Read Grep Glob Task
 metadata:
   author: galsapir
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 Independent second opinion from a separate AI model.
@@ -44,9 +46,11 @@ Gather context before building the review prompt:
 
 Priority: explicit `--backend` flag > auto-detect.
 
-Auto-detect: try `codex` (`which codex`) → `bedrock` (script exists) → `claude` (fallback).
+Auto-detect order: `subagent` (always available inside Claude Code — default) → `codex` (if `which codex`) → `bedrock` (if `scripts/bedrock-review.py` present and AWS creds) → `claude` (fallback).
 
-Default models: codex=`gpt-5.4`, claude=`sonnet`, bedrock=`eu.anthropic.claude-sonnet-4-6-v1:0`. Override with `--model`.
+`subagent` is the cheapest path — zero API keys, fresh context, no subprocess. Pick `interactive` when you want to drive the reviewer yourself (asking follow-ups, iterating). Pick `codex` / `claude` / `bedrock` when you need a specific external model.
+
+Default models: codex=`gpt-5.4`, claude=`sonnet`, bedrock=`eu.anthropic.claude-sonnet-4-6-v1:0`. `subagent` runs on whatever model Claude Code is using. `interactive` uses codex defaults unless `--model` is passed. Override with `--model`.
 
 ### 4. Build Review Prompt
 
@@ -62,11 +66,50 @@ Write assembled prompt to `/tmp/ar-prompt-$$.md`.
 
 ### 5. Execute Review
 
-Capture git state before (`git diff --stat`), then run:
+Capture git state before (`git diff --stat`), then run the chosen backend.
 
-- **codex**: `codex exec "$(cat /tmp/ar-prompt-$$.md)" --sandbox read-only --model <model> -c model_reasoning_effort=<effort>` (use stdin for prompts >100KB; effort defaults to `medium`)
-- **claude**: `claude -p "$(cat /tmp/ar-prompt-$$.md)" --model <model> --output-format text`
-- **bedrock**: `uv run scripts/bedrock-review.py /tmp/ar-prompt-$$.md --model <model> --region eu-west-1`
+#### subagent (default)
+
+Invoke the `Task` tool directly:
+
+- `subagent_type`: `general-purpose`
+- `description`: `Adversarial review (<content_type>)`
+- `prompt`: the full contents of `/tmp/ar-prompt-$$.md`
+
+Use the subagent's returned text as the raw reviewer output for step 6. The subagent has its own tools (Read, Grep, Glob, Bash) and can explore the repo, but runs in a fresh context with no prior conversation.
+
+#### interactive (tmux + codex)
+
+Pre-reqs: must be running inside tmux (`tmux list-sessions` succeeds) and `codex` must be on PATH. If either fails, print a clear error and fall back to asking the user to pick another backend.
+
+1. Launch a new window pre-seeded with codex:
+   ```
+   tmux new-window -n adv-review "codex \"$(cat /tmp/ar-prompt-$$.md)\""
+   ```
+   (For prompts >100KB, write prompt to file and launch with `codex < /tmp/ar-prompt-$$.md`.)
+2. Tell the user: *"Opened tmux window `adv-review`. Drive the review to convergence, then in that window type: `output the final review JSON only`. When done, come back here and say `done` (or `cancel`)."*
+3. Wait for the user to signal completion.
+4. On `done`: capture the full pane buffer:
+   ```
+   tmux capture-pane -t adv-review -p -S - > /tmp/ar-capture-$$.txt
+   ```
+   Extract the last complete JSON object from the capture (scan for the final balanced `{...}` block). If extraction fails, ask the user to paste the JSON directly.
+5. Kill the window: `tmux kill-window -t adv-review`.
+6. Feed the extracted JSON to step 6 as the raw reviewer output.
+
+#### codex (non-interactive)
+
+`codex exec "$(cat /tmp/ar-prompt-$$.md)" --sandbox read-only --model <model> -c model_reasoning_effort=<effort>` (use stdin for prompts >100KB; effort defaults to `medium`)
+
+#### claude -p
+
+`claude -p "$(cat /tmp/ar-prompt-$$.md)" --model <model> --output-format text`
+
+#### bedrock
+
+`uv run scripts/bedrock-review.py /tmp/ar-prompt-$$.md --model <model> --region eu-west-1`
+
+---
 
 After execution, run `git diff --stat && git status --short`. If any new changes appear, flag immediately.
 
