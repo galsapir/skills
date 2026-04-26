@@ -3,13 +3,16 @@ name: interview
 description: >
   Deep project interview that produces actionable specs before implementation begins.
   Conducts a structured requirements interview with adaptive depth and checkpoints,
-  then outputs a spec as a file, GitHub issue, or both. Use when the user wants to
-  scope a project, plan a feature, write a spec, or says "interview".
+  then outputs a spec as a file, GitHub issue, or both. When given an existing plan
+  or design, switches to grill mode — stress-testing decisions and walking the design
+  tree. Use when the user wants to scope a project, plan a feature, write a spec,
+  stress-test a design, or says "interview" or "grill me".
 license: MIT
 compatibility: Designed for Claude Code (or similar products)
 metadata:
   author: galsapir
-  version: "1.0.0"
+  version: "1.1.0"
+  credits: grill mode inspired by mattpocock/skills (MIT)
   model-hint: opus
 ---
 
@@ -27,7 +30,23 @@ First, gather context about the current state:
 3. If `$ARGUMENTS` is a text description, use it as the starting point
 4. If no arguments provided, ask what the project/feature is about
 
-## Interview Process
+## Mode Selection
+
+After gathering context, determine the interview mode:
+
+**Grill mode** — activate when ANY of these are true:
+- The user provides an existing plan, design doc, spec, or architecture
+- `$ARGUMENTS` references a file containing a plan or design
+- The user says "grill me", "stress-test", "poke holes", or similar
+- There's clearly an existing design to validate rather than requirements to discover
+
+**Discovery mode** — activate when the user is starting from scratch or has only a vague idea.
+
+State which mode you're using at the start: "You've got an existing plan, so I'll switch to grill mode — I'll stress-test your decisions and walk through the design tree." or "Starting from scratch, so I'll run a discovery interview to uncover requirements."
+
+---
+
+## Discovery Mode
 
 Interview the user about their project using AskUserQuestion. The goal is to uncover requirements, constraints, edge cases, and design decisions that the user hasn't thought through yet.
 
@@ -98,9 +117,50 @@ Gauge project complexity from the initial description and context:
 
 State the estimated scope at the start: "This seems like a [size] project. I'll aim for roughly [N] questions across [M] checkpoints. We can always adjust."
 
-## Spec Generation
+---
+
+## Grill Mode
+
+Stress-test the user's plan or design by walking through every branch of the decision tree. The goal is to reach shared understanding — every assumption surfaced, every dependency resolved, every edge case considered.
+
+### Approach
+
+- **Be adversarial.** Your job is to find holes, contradictions, and unstated assumptions. Don't accept hand-wavy answers.
+- **Walk the decision tree.** Identify the major design decisions, then drill into each branch sequentially. Resolve dependencies between decisions before moving on.
+- **One question at a time.** Each question should target a single decision point. Don't batch questions — let the user think deeply about each one.
+- **Explore the codebase first.** If a question can be answered by reading existing code, read the code instead of asking. Only ask when the answer requires human judgment or domain knowledge.
+- **No suggested answers by default.** Let the user think freely. If the user explicitly asks for suggestions or recommendations, then provide your opinion with each question going forward.
+- **Frame around consequences.** "What happens when X fails?" is better than "Have you thought about X?"
+
+### Decision Tree Traversal
+
+1. Read the plan/design thoroughly
+2. Identify the top-level decisions and assumptions
+3. For each decision:
+   - Ask why this choice was made over alternatives
+   - Probe the implications and edge cases of the choice
+   - Identify dependencies on other decisions
+   - If a dependency is unresolved, switch to that branch first
+4. Track which branches are resolved vs open
+5. Continue until all branches are resolved or the user wraps up
+
+### Checkpoint Mechanism
+
+After resolving 3-5 decision branches, checkpoint:
+
+```
+Question: "Checkpoint: I've stress-tested [resolved areas]. Open branches: [remaining]. How should we proceed?"
+Options:
+- "Keep grilling" — continue with remaining branches
+- "Skip to [specific area]" — jump to a particular decision
+- "Wrap up" — enough, generate the findings
+```
+
+## Output
 
 When the interview is complete (either all areas covered or user says "wrap up"):
+
+### Discovery Mode → Spec
 
 1. Synthesize all answers into a structured spec document
 2. Use this format:
@@ -147,6 +207,39 @@ When the interview is complete (either all areas covered or user says "wrap up")
 
 3. Adapt the template — skip sections that don't apply, add sections that do.
 
+### Grill Mode → Findings Report
+
+1. Synthesize the stress-test into a findings report
+2. Use this format:
+
+```markdown
+# [Plan/Design Name] — Grill Report
+
+## Summary
+[2-3 sentence verdict: is the plan solid, needs work, or has fundamental issues?]
+
+## Resolved Decisions
+- **[Decision]**: [What was decided and why it holds up]
+
+## Issues Found
+### Critical
+- [Issues that would block or break the plan]
+
+### Gaps
+- [Missing details that need answers before implementation]
+
+### Risks
+- [Things that could go wrong but have mitigation paths]
+
+## Assumptions Surfaced
+- [Implicit assumptions that were made explicit during the grill]
+
+## Recommendations
+- [Concrete next steps to address issues and gaps]
+```
+
+3. Adapt the template — skip sections that don't apply.
+
 ## Output Delivery
 
 After generating the spec, ask the user with AskUserQuestion:
@@ -166,7 +259,8 @@ If creating GH issue: use `gh issue create` with the spec as the body. Ask for l
 ## Important
 
 - This is an INTERVIEW, not a lecture. Listen more than you talk.
-- Don't inject your own architectural opinions unless asked. Surface tradeoffs and let the user decide.
+- In discovery mode: don't inject your own architectural opinions unless asked. Surface tradeoffs and let the user decide.
+- In grill mode: be opinionated about problems you find, but don't suggest answers unless the user asks for them.
 - If the user gives a one-word answer, that's fine. Don't push for more unless the answer is genuinely ambiguous.
 - Keep checkpoint summaries SHORT. The user doesn't want to re-read everything they just told you.
-- Never start implementing. This command produces a spec, nothing more.
+- Never start implementing. This command produces a spec or findings report, nothing more.
