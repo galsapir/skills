@@ -18,6 +18,12 @@ npx skills add galsapir/skills --skill adversarial-review
 npx skills add galsapir/skills --skill ubiquitous-language
 ```
 
+## Update
+
+```
+npx skills update
+```
+
 ## Skills
 
 Skills are invoked by describing the task in natural language — the agent selects a matching skill based on its description. No slash command needed.
