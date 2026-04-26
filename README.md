@@ -1,6 +1,6 @@
 # skills
 
-A collection of [Agent Skills](https://agentskills.io) by [Gal Sapir](https://github.com/galsapir).
+A collection of [Agent Skills](https://agentskills.io) by [Gal Sapir](https://github.com/galsapir). Some skills are inspired by or adapted from [Matt Pocock's skills](https://github.com/mattpocock/skills) (MIT).
 
 Compatible with Claude Code, Cursor, GitHub Copilot, VS Code, Gemini CLI, and [many other agents](https://agentskills.io) that support the open Agent Skills standard.
 
@@ -15,20 +15,22 @@ This installs all skills from the repository. To install a specific skill:
 ```
 npx skills add galsapir/skills --skill interview
 npx skills add galsapir/skills --skill adversarial-review
+npx skills add galsapir/skills --skill ubiquitous-language
 ```
 
 ## Skills
 
 Skills are invoked by describing the task in natural language — the agent selects a matching skill based on its description. No slash command needed.
 
-### `interview` — Project Interview
+### `interview` — Project Interview & Design Grill
 
-Deep project interview that produces actionable specs before implementation begins. Conducts a structured requirements interview with adaptive depth and checkpoints, then outputs a spec as a file, GitHub issue, or both.
+Deep project interview with two modes. **Discovery mode** uncovers requirements through structured questioning and produces a spec. **Grill mode** activates when you bring an existing plan or design — it stress-tests your decisions by walking the design tree branch by branch.
 
 ```
 "use the interview skill to scope a CLI tool for managing dotfiles"
 "interview me about adding dark mode to settings"
-"use the interview skill with this plan: path/to/plan.md"
+"grill me on this plan: path/to/plan.md"
+"use the interview skill to stress-test my architecture doc"
 ```
 
 ### `adversarial-review` — Independent Second Opinion
@@ -56,6 +58,18 @@ The skill accepts these arguments: `[target] [--backend codex|claude|bedrock] [-
 
 **Output structure**: Executive Summary (SHIP/ITERATE/RETHINK verdict), Understanding (full mode), Findings (severity + confidence rated), Strengths, Questions for Author.
 
+The finding format uses [semi-formal reasoning](https://arxiv.org/abs/2603.01896) (Ugare & Chandra, 2026) — each finding is a certificate with explicit premises, execution trace, and derived conclusion.
+
+### `ubiquitous-language` — Domain Glossary
+
+Extracts a DDD-style ubiquitous language glossary from the current conversation. Flags ambiguities, proposes canonical terms, and saves to `UBIQUITOUS_LANGUAGE.md`. Adapted from [mattpocock/skills](https://github.com/mattpocock/skills).
+
+```
+"build a ubiquitous language from this conversation"
+"define our domain terms"
+"let's harden the terminology for this project"
+```
+
 ## Repository Structure
 
 This repository follows the [Agent Skills specification](https://agentskills.io/specification):
@@ -70,6 +84,8 @@ skills/
       review-prompt.md    # Review prompt template
     scripts/
       bedrock-review.py   # AWS Bedrock backend script
+  ubiquitous-language/
+    SKILL.md              # Skill metadata + instructions
 ```
 
 Each skill is a self-contained directory with a `SKILL.md` file containing YAML frontmatter (`name`, `description`, and optional fields) followed by Markdown instructions.

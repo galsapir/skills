@@ -91,6 +91,8 @@ You MUST return a single JSON object. No preamble, no markdown fences, no traili
 
 ### Finding shape (semi-formal certificate)
 
+Each finding follows the semi-formal reasoning structure from [Agentic Code Reasoning](https://arxiv.org/abs/2603.01896) (Ugare & Chandra, 2026): explicit premises with cited evidence, a step-by-step trace, and a derived conclusion. This prevents the reviewer from skipping cases or making unsupported claims.
+
 Every finding is a certificate. You cannot skip a field because you lack evidence. If you cannot fill a field, the finding is not ready — drop it or downgrade to `UNVERIFIABLE`.
 
 ```
